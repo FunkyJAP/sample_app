@@ -5,6 +5,9 @@ ruby '3.2.10'
 
 gem 'bootsnap',        '1.16.0', require: false
 gem 'concurrent-ruby', '1.3.4'
+gem 'faker',           '2.21.0'
+gem 'will_paginate',           '3.3.1'
+gem 'bootstrap-will_paginate', '1.0.0'
 gem 'importmap-rails', '1.1.5'
 gem 'jbuilder',        '2.14.1'
 gem 'puma',            '6.6.1'
