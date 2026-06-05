@@ -1,4 +1,7 @@
 class User < ApplicationRecord
+
+has_many :microposts, dependent: :destroy
+
   # 第10章 10.2.2の演習時にエラーになるかもと言われ「第9章の仮想属性（アクセサ）を定義して、エラーを完全に防ぎます」
   attr_accessor :remember_token
 
@@ -37,6 +40,11 @@ class User < ApplicationRecord
     remember_digest || remember
   end
 
+  # 試作feedの定義
+  # 完全な実装は次章の「ユーザーをフォローする」を参照
+  def feed
+    Micropost.where("user_id = ?", id)
+  end
 
 end
 
