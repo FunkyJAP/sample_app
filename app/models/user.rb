@@ -1,6 +1,14 @@
 class User < ApplicationRecord
 
 has_many :microposts, dependent: :destroy
+has_many :active_relationships, class_name:  "Relationship",
+                                  foreign_key: "follower_id",
+                                  dependent:   :destroy
+has_many :passive_relationships, class_name:  "Relationship",
+                                   foreign_key: "followed_id",
+                                   dependent:   :destroy
+has_many :following, through: :active_relationships, source: :followed
+has_many :followers, through: :passive_relationships, source: :follower
 
   # 第10章 10.2.2の演習時にエラーになるかもと言われ「第9章の仮想属性（アクセサ）を定義して、エラーを完全に防ぎます」
   attr_accessor :remember_token
@@ -40,10 +48,33 @@ has_many :microposts, dependent: :destroy
     remember_digest || remember
   end
 
-  # 試作feedの定義
-  # 完全な実装は次章の「ユーザーをフォローする」を参照
+  # パスワード再設定の期限が切れている場合はtrueを返す
+  def password_reset_expired?
+    reset_sent_at < 2.hours.ago
+  end
+
+  # ユーザーのステータスフィードを返す
   def feed
-    Micropost.where("user_id = ?", id)
+    following_ids = "SELECT followed_id FROM relationships
+                     WHERE  follower_id = :user_id"
+    Micropost.where("user_id IN (#{following_ids})
+                     OR user_id = :user_id", user_id: id)
+             .includes(:user, image_attachment: :blob)
+  end
+
+    # ユーザーをフォローする
+  def follow(other_user)
+    following << other_user unless self == other_user
+  end
+
+  # ユーザーをフォロー解除する
+  def unfollow(other_user)
+    following.delete(other_user)
+  end
+
+  # 現在のユーザーが他のユーザーをフォローしていればtrueを返す
+  def following?(other_user)
+    following.include?(other_user)
   end
 
 end
